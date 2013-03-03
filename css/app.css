@@ -1,0 +1,30 @@
+#message h1 {
+  visibility: hidden;
+  text-align: center;
+}
+
+.notes {
+  padding: 0;
+  margin: 0;
+}
+
+.notes a {
+  background-color: #f2f2f2;
+  border: 1px solid #e6e6e6;
+  font-size: 3em;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px;
+}
+
+.notes a:hover {
+  background-color: #e6e6e6;
+}
+
+h1.success {
+  color: green;
+}
+
+h1.error {
+  color: red;
+}

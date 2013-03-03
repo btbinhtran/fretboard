@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8" />
+
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width" />
+
+    <title>Fretboard</title>
+
+    <!-- Included CSS Files (Compressed) -->
+    <link rel="stylesheet" href="css/foundation.css">
+    <link rel="stylesheet" href="css/app.css">
+  </head>
+  <body>
+
+    <div id="fretboard"></div>
+
+    <div id="message" class="row twelve columns">
+        <div class="twelve columns end">
+            <h1>Guess a note</h1>
+        </div>
+    </div>
+
+    <div class="notes row twelve columns">
+        <a href="#" class="two columns" data-note="0">A</a>
+        <a href="#" class="two columns" data-note="1">A&#9839;/B&#9837;</a>
+        <a href="#" class="two columns" data-note="2">B</a>
+        <a href="#" class="two columns" data-note="3">C</a>
+        <a href="#" class="two columns" data-note="4">C&#9839;/D&#9837;</a>
+        <a href="#" class="two columns end" data-note="5">D</a>
+    </div>
+    <div class="notes row twelve columns">
+        <a href="#" class="two columns" data-note="6">D&#9839;/E&#9837;</a>
+        <a href="#" class="two columns" data-note="7">E</a>
+        <a href="#" class="two columns" data-note="8">F</a>
+        <a href="#" class="two columns" data-note="9">F&#9839;/G&#9837;</a>
+        <a href="#" class="two columns" data-note="10">G</a>
+        <a href="#" class="two columns" data-note="11">G&#9839;/A&#9837;</a>
+    </div>
+
+    <script src="js/libs/jquery-1.9.1.min.js"></script>
+
+    <script src="js/libs/raphael-min.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
