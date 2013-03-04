@@ -79,7 +79,7 @@ $(document).ready(function () {
                 };
 
                 p.mouseover(pieceMouseOver).mouseout(pieceMouseOut);
-                txt.mouseover(pieceMouseOver).mouseout(pieceMouseOut);
+                txt.mouseover(pieceMouseOver);
                 p.click(pieceClick);
                 txt.click(pieceClick);
 
@@ -123,7 +123,7 @@ $(document).ready(function () {
                         };
 
                     p.mouseover(pieceMouseOver).mouseout(pieceMouseOut);
-                    txt.mouseover(pieceMouseOver).mouseout(pieceMouseOut);
+                    txt.mouseover(pieceMouseOver);
                     p.click(pieceClick);
                     txt.click(pieceClick);
 
@@ -346,7 +346,7 @@ $(document).ready(function () {
     var randPress = paper.circle(fretCoord(1), stringCoord(1), RAND_PRESS_RADIUS);
 
     function playFretboardGuess() {
-        infoText.attr({text: NOTE_QUESTION_TEXT, fill: '#000', stroke:"none", "font-size": 40});
+        infoText.attr({text: NOTE_QUESTION_TEXT, fill: '#000', stroke:"#000", "font-size": 40});
         randSpot = randFretStringNums();
         randPress.remove();
         randPress = paper.circle(fretCoord(randSpot.fretNum), stringCoord(randSpot.stringNum), RAND_PRESS_RADIUS);
@@ -377,7 +377,7 @@ $(document).ready(function () {
         if (guessNote === actualNote) {
             var noteText = paper.text(randPress.attr('cx'), randPress.attr('cy'), noteStr).attr({fill: '#FFF', stroke: '#FFF', "font-size": RAND_PRESS_RADIUS - (RAND_PRESS_RADIUS / 4)});
             randPress.attr({fill: "green", stroke: "green"});
-            infoText.attr({text: noteStr + " is correct", fill: 'green', stroke:"none", "font-size": 40})
+            infoText.attr({text: noteStr + " is correct", fill: 'green', stroke:"green", "font-size": 40})
                 .animate({"font-size": 40},
                 1100, "linear",
                 function() {
@@ -393,7 +393,7 @@ $(document).ready(function () {
 //                noteText.remove();
 //            });
         } else {
-            infoText.attr({text: noteStr + " is wrong",fill: '#FF0000', stroke:"none", "font-size": 40});
+            infoText.attr({text: noteStr + " is wrong",fill: '#FF0000', stroke:"#FF0000", "font-size": 40});
         }
     }
 
