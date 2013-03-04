@@ -21,7 +21,8 @@ $(document).ready(function () {
     Raphael.fn.donutChart = function (cx, cy, rOut, rIn, outNotes, inNotes, stroke) {
         var paper = this,
             rad = Math.PI / 180,
-            chart = this.set();
+            chart = this.set(),
+            txtStrokeColor = "#000";
 
         function innerSector(cx, cy, r, startAngle, endAngle, params) {
             //console.log(params.fill);
@@ -64,8 +65,8 @@ $(document).ready(function () {
                     ms = 0,
                     delta = 30,
                     bcolor = outNote.bgColor,
-                    p = outerSector(cx, cy, rOut, outAngle, outAngle + outAngleplus, {fill: bcolor, stroke: "#000", "stroke-width": 3}),
-                    txt = paper.text(cx + (rOut - outSectorPad) * Math.cos(-outPopangle * rad), cy + (rOut - outSectorPad) * Math.sin(-outPopangle * rad), outNote.label).attr({fill: '#000', stroke:"none", "font-size":20});
+                    p = outerSector(cx, cy, rOut, outAngle, outAngle + outAngleplus, {fill: bcolor, stroke: txtStrokeColor, "stroke-width": 3}),
+                    txt = paper.text(cx + (rOut - outSectorPad) * Math.cos(-outPopangle * rad), cy + (rOut - outSectorPad) * Math.sin(-outPopangle * rad), outNote.label).attr({fill: txtStrokeColor, stroke: txtStrokeColor, "font-size":20});
                 var pieceMouseOver = function () {
                     p.stop().animate({transform:"s1.05 1.05 " + (cx) + " " + (cy)}, ms, "linear");
                     txt.stop().animate({transform:"s1.05 1.05 " + (cx) + " " + (cy)}, ms, "linear");
@@ -108,8 +109,8 @@ $(document).ready(function () {
                     bcolor = inNote.bgColor;
 
                 if (inNote.value !== -1) {
-                    var p = innerSector(cx, cy, rIn, inAngle, inAngle + inAngleplus, {fill:bcolor, stroke:"#000", "stroke-width":3}),
-                        txt = paper.text(cx + (rIn - inSectorPad) * Math.cos(-inPopangle * rad), cy + (rIn - inSectorPad) * Math.sin(-inPopangle * rad), inNote.label).attr({fill:'#000', stroke:"none", "font-size":20});
+                    var p = innerSector(cx, cy, rIn, inAngle, inAngle + inAngleplus, {fill:bcolor, stroke: txtStrokeColor, "stroke-width":3}),
+                        txt = paper.text(cx + (rIn - inSectorPad) * Math.cos(-inPopangle * rad), cy + (rIn - inSectorPad) * Math.sin(-inPopangle * rad), inNote.label).attr({fill: txtStrokeColor, stroke: txtStrokeColor, "font-size":20});
                     var pieceMouseOver = function () {
                             p.stop().animate({transform:"s1.05 1.05 " + (cx) + " " + (cy)}, ms, "linear");
                             txt.stop().animate({transform:"s1.05 1.05 " + (cx) + " " + (cy)}, ms, "linear");
@@ -123,7 +124,7 @@ $(document).ready(function () {
                         };
 
                     p.mouseover(pieceMouseOver).mouseout(pieceMouseOut);
-                    txt.mouseover(pieceMouseOver);
+                    txt.mouseover(pieceMouseOver).mouseout(pieceMouseOut);
                     p.click(pieceClick);
                     txt.click(pieceClick);
 
@@ -377,7 +378,7 @@ $(document).ready(function () {
         if (guessNote === actualNote) {
             var noteText = paper.text(randPress.attr('cx'), randPress.attr('cy'), noteStr).attr({fill: '#FFF', stroke: '#FFF', "font-size": RAND_PRESS_RADIUS - (RAND_PRESS_RADIUS / 4)});
             randPress.attr({fill: "green", stroke: "green"});
-            infoText.attr({text: noteStr + " is correct", fill: 'green', stroke:"green", "font-size": 40})
+            infoText.attr({text: noteStr.replace("\n", " / ") + " is correct", fill: 'green', stroke:"green", "font-size": 40})
                 .animate({"font-size": 40},
                 1100, "linear",
                 function() {
@@ -385,15 +386,8 @@ $(document).ready(function () {
                     playFretboardGuess();
                 }
             );
-
-
-//            $(infoText).effect("highlight", 1300, function () {
-//                infoText.attr({text: NOTE_QUESTION_TEXT, fill: '#000', stroke:"none", "font-size": 40});
-//                playFretboardGuess();
-//                noteText.remove();
-//            });
         } else {
-            infoText.attr({text: noteStr + " is wrong",fill: '#FF0000', stroke:"#FF0000", "font-size": 40});
+            infoText.attr({text: noteStr.replace("\n", " / ") + " is wrong",fill: '#FF0000', stroke:"#FF0000", "font-size": 40});
         }
     }
 
