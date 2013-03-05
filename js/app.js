@@ -1,20 +1,24 @@
 $(document).ready(function () {
 // GAME CONSTANTS
-    var CANVAS_WIDTH = 1201,
-        CANVAS_HEIGHT = 1000,
+    var CANVAS_WIDTH = $(document).width() * 0.95,
+        CANVAS_HEIGHT = $(document).height() * 1.2,
         NUM_STRINGS = 6,
         NUM_FRETS = 24,
         NUM_FRET_BARS = 25,
-        X_OFFSET = 40,
-        Y_OFFSET = 55,
-        FRETBOARD_WIDTH = 240,
-        FRETBOARD_HEIGHT = 1200,
+        FRETBOARD_WIDTH = CANVAS_HEIGHT * 0.26,
+        FRETBOARD_HEIGHT = CANVAS_WIDTH * 0.95,
+        X_OFFSET = (CANVAS_WIDTH - FRETBOARD_HEIGHT) - 5,
+        Y_OFFSET = 10,
         VERT_LINE_PAD = FRETBOARD_HEIGHT / NUM_FRET_BARS,
         HOR_LINE_PAD = FRETBOARD_WIDTH / NUM_STRINGS,
-        FRET_MARK_RADIUS = 8,
-        INFO_OFFSET = Y_OFFSET + FRETBOARD_WIDTH + (FRETBOARD_WIDTH / 4.0),
-        GUESS_PAD_OFFSET = INFO_OFFSET + (FRETBOARD_WIDTH),
+        FRET_MARK_RADIUS = HOR_LINE_PAD * 0.25,
+        INFO_OFFSET = Y_OFFSET + FRETBOARD_WIDTH + (FRETBOARD_WIDTH / 8.0),
+        GUESS_PAD_OFFSET = INFO_OFFSET + (FRETBOARD_WIDTH + 10),
         RAND_PRESS_RADIUS = (VERT_LINE_PAD / 2) - ((VERT_LINE_PAD / 2) / 5),
+        GAMEPAD_OUT_RADIUS = FRETBOARD_WIDTH * 0.80,
+        GAMEPAD_IN_RADIUS = GAMEPAD_OUT_RADIUS / 2.0,
+        INFO_TEXT_FONT_SIZE = 40 * (1 - (40 / FRETBOARD_WIDTH)),
+        WHEEL_TEXT_FONT_SIZE = 20 * (1 - (20 / FRETBOARD_WIDTH))
         NOTE_QUESTION_TEXT = "Guess the note pressed on the fretboard";
 
 
@@ -62,12 +66,12 @@ $(document).ready(function () {
                 var outNote = outNotes[j],
                     outAngleplus = 360 * outNote.percent / outTotal,
                     outPopangle = outAngle + (outAngleplus / 2),
-                    outSectorPad = 52,
+                    outSectorPad = 52 * (1 - (52 / FRETBOARD_WIDTH)),
                     ms = 0,
                     delta = 30,
                     bcolor = outNote.bgColor,
                     p = outerSector(cx, cy, rOut, outAngle, outAngle + outAngleplus, {fill: bcolor, stroke: txtStrokeColor, "stroke-width": 3}),
-                    txt = paper.text(cx + (rOut - outSectorPad) * Math.cos(-outPopangle * rad), cy + (rOut - outSectorPad) * Math.sin(-outPopangle * rad), outNote.label).attr({fill: txtStrokeColor, stroke: txtStrokeColor, "font-size":20});
+                    txt = paper.text(cx + (rOut - outSectorPad) * Math.cos(-outPopangle * rad), cy + (rOut - outSectorPad) * Math.sin(-outPopangle * rad), outNote.label).attr({fill: txtStrokeColor, stroke: txtStrokeColor, "font-size": WHEEL_TEXT_FONT_SIZE});
                 var pieceMouseOver = function () {
                     p.stop().animate({transform:"s1.05 1.05 " + (cx) + " " + (cy)}, ms, "linear");
                     txt.stop().animate({transform:"s1.05 1.05 " + (cx) + " " + (cy)}, ms, "linear");
@@ -104,14 +108,14 @@ $(document).ready(function () {
                 var inNote = inNotes[j],
                     inAngleplus = 360 * inNote.percent / inTotal,
                     inPopangle = inAngle + (inAngleplus / 2),
-                    inSectorPad = 35,
+                    inSectorPad = 35 * (1 - (35 / FRETBOARD_WIDTH)),
                     ms = 0,
                     delta = 30,
                     bcolor = inNote.bgColor;
 
                 if (inNote.value !== -1) {
                     var p = innerSector(cx, cy, rIn, inAngle, inAngle + inAngleplus, {fill:bcolor, stroke: txtStrokeColor, "stroke-width":3}),
-                        txt = paper.text(cx + (rIn - inSectorPad) * Math.cos(-inPopangle * rad), cy + (rIn - inSectorPad) * Math.sin(-inPopangle * rad), inNote.label).attr({fill: txtStrokeColor, stroke: txtStrokeColor, "font-size":20});
+                        txt = paper.text(cx + (rIn - inSectorPad) * Math.cos(-inPopangle * rad), cy + (rIn - inSectorPad) * Math.sin(-inPopangle * rad), inNote.label).attr({fill: txtStrokeColor, stroke: txtStrokeColor, "font-size": WHEEL_TEXT_FONT_SIZE});
                     var pieceMouseOver = function () {
                             p.stop().animate({transform:"s1.05 1.05 " + (cx) + " " + (cy)}, ms, "linear");
                             txt.stop().animate({transform:"s1.05 1.05 " + (cx) + " " + (cy)}, ms, "linear");
@@ -153,7 +157,7 @@ $(document).ready(function () {
     fretBg.attr("stroke", "#000");
 // end fretboard background
 
-    var infoText = paper.text(CANVAS_WIDTH / 2.0, INFO_OFFSET, NOTE_QUESTION_TEXT).attr({fill: "#000", stroke: "none", "font-size": 40});
+    var infoText = paper.text(CANVAS_WIDTH / 2.0, INFO_OFFSET, NOTE_QUESTION_TEXT).attr({fill: "#000", stroke: "none", "font-size": INFO_TEXT_FONT_SIZE});
 
     // GAMEPAD
     var outerNotes = [
@@ -245,7 +249,7 @@ $(document).ready(function () {
         }
     ];
 
-    var gamePad = paper.donutChart(CANVAS_WIDTH / 2.0, GUESS_PAD_OFFSET, 200, 100,
+    var gamePad = paper.donutChart(CANVAS_WIDTH / 2.0, GUESS_PAD_OFFSET, GAMEPAD_OUT_RADIUS, GAMEPAD_IN_RADIUS,
         outerNotes.reverse(),
         innerNotes.reverse()
     );
@@ -348,7 +352,7 @@ $(document).ready(function () {
     var randPress = paper.circle(fretCoord(1), stringCoord(1), RAND_PRESS_RADIUS);
 
     function playFretboardGuess() {
-        infoText.attr({text: NOTE_QUESTION_TEXT, fill: '#000', stroke:"#000", "font-size": 40});
+        infoText.attr({text: NOTE_QUESTION_TEXT, fill: '#000', stroke:"#000", "font-size": INFO_TEXT_FONT_SIZE});
         randSpot = randFretStringNums();
         randPress.remove();
         randPress = paper.circle(fretCoord(randSpot.fretNum), stringCoord(randSpot.stringNum), RAND_PRESS_RADIUS);
@@ -379,8 +383,8 @@ $(document).ready(function () {
         if (guessNote === actualNote) {
             var noteText = paper.text(randPress.attr('cx'), randPress.attr('cy'), noteStr).attr({fill: '#FFF', stroke: '#FFF', "font-size": RAND_PRESS_RADIUS - (RAND_PRESS_RADIUS / 4)});
             randPress.attr({fill: "green", stroke: "green"});
-            infoText.attr({text: noteStr.replace("\n", " / ") + " is correct", fill: 'green', stroke:"green", "font-size": 40})
-                .animate({"font-size": 40},
+            infoText.attr({text: noteStr.replace("\n", " / ") + " is correct", fill: 'green', stroke:"green", "font-size": INFO_TEXT_FONT_SIZE})
+                .animate({"font-size": INFO_TEXT_FONT_SIZE},
                 1100, "linear",
                 function() {
                     noteText.remove();
@@ -388,7 +392,7 @@ $(document).ready(function () {
                 }
             );
         } else {
-            infoText.attr({text: noteStr.replace("\n", " / ") + " is wrong",fill: '#FF0000', stroke:"#FF0000", "font-size": 40});
+            infoText.attr({text: noteStr.replace("\n", " / ") + " is wrong",fill: '#FF0000', stroke:"#FF0000", "font-size": INFO_TEXT_FONT_SIZE});
         }
     }
 
