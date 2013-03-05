@@ -17,6 +17,7 @@ $(document).ready(function () {
         RAND_PRESS_RADIUS = (VERT_LINE_PAD / 2) - ((VERT_LINE_PAD / 2) / 5),
         NOTE_QUESTION_TEXT = "Guess the note pressed on the fretboard";
 
+
     // Raphael.js monkey patching
     Raphael.fn.donutChart = function (cx, cy, rOut, rIn, outNotes, inNotes, stroke) {
         var paper = this,
@@ -159,43 +160,43 @@ $(document).ready(function () {
         {
             label: "A",
             percent: 0.1428571429,
-            value: 0,
+            value: 9,
             bgColor: "blue"
         },
         {
             label: "B",
             percent: 0.1428571429,
-            value: 2,
+            value: 11,
             bgColor: "red"
         },
         {
             label: "C",
             percent: 0.1428571429,
-            value: 3,
+            value: 0,
             bgColor: "yellow"
         },
         {
             label: "D",
             percent: 0.1428571429,
-            value: 5,
+            value: 2,
             bgColor: "red"
         },
         {
             label: "E",
             percent: 0.1428571429,
-            value: 7,
+            value: 4,
             bgColor: "blue"
         },
         {
             label: "F",
             percent: 0.1428571429,
-            value: 8,
+            value: 5,
             bgColor: "red"
         },
         {
             label: "G",
             percent: 0.1428571429,
-            value: 10,
+            value: 7,
             bgColor: "yellow"
         }
     ];
@@ -203,7 +204,7 @@ $(document).ready(function () {
         {
             label: "A\u266F\nB\u266D",
             percent: 0.1428571429,
-            value: 1,
+            value: 10,
             bgColor: "#FF00FF"
         },
         {
@@ -215,13 +216,13 @@ $(document).ready(function () {
         {
             label: "C\u266F\nD\u266D",
             percent: 0.1428571429,
-            value: 4,
+            value: 1,
             bgColor: "#FFA500"
         },
         {
             label: "D\u266F\nE\u266D",
             percent: 0.1428571429,
-            value: 6,
+            value: 3,
             bgColor: "#FF00FF"
         },
         {
@@ -233,13 +234,13 @@ $(document).ready(function () {
         {
             label: "F\u266F\nG\u266D",
             percent: 0.1428571429,
-            value: 9,
+            value: 6,
             bgColor: "#FFA500"
         },
         {
             label: "G\u266F\nA\u266D",
             percent: 0.1428571429,
-            value: 11,
+            value: 8,
             bgColor: "#00FF00"
         }
     ];
@@ -317,29 +318,29 @@ $(document).ready(function () {
     function noteUnicodeString(note) {
         switch (note) {
             case 0:
-                return "A";
-            case 1:
-                return "A\u266F\nB\u266D";
-            case 2:
-                return "B";
-            case 3:
                 return "C";
-            case 4:
+            case 1:
                 return "C\u266F\nD\u266D";
-            case 5:
+            case 2:
                 return "D";
-            case 6:
+            case 3:
                 return "D\u266F\nE\u266D";
-            case 7:
+            case 4:
                 return "E";
-            case 8:
+            case 5:
                 return "F";
-            case 9:
+            case 6:
                 return "F\u266F\nG\u266D";
-            case 10:
+            case 7:
                 return "G";
-            case 11:
+            case 8:
                 return "G\u266F\nA\u266D";
+            case 9:
+                return "A";
+            case 10:
+                return "A\u266F\nB\u266D";
+            case 11:
+                return "B";
         }
     }
 
@@ -362,15 +363,15 @@ $(document).ready(function () {
         var octaveFret = fretNum % 12;
 
         if (stringNum === 0 || stringNum === 5) {
-            actualNote = (octaveFret + 7) % 12;
+            actualNote = (octaveFret + 4) % 12;
         } else if (stringNum === 1) {
-            actualNote = (octaveFret + 2) % 12;
+            actualNote = (octaveFret + 12) % 12;
         } else if (stringNum === 2) {
-            actualNote = (octaveFret + 10) % 12;
+            actualNote = (octaveFret + 7) % 12;
         } else if (stringNum === 3) {
-            actualNote = (octaveFret + 5) % 12;
+            actualNote = (octaveFret + 2) % 12;
         } else if (stringNum === 4) {
-            actualNote = octaveFret % 12;
+            actualNote = (octaveFret + 9) % 12;
         }
 
         var noteStr = noteUnicodeString(guessNote);
@@ -398,4 +399,91 @@ $(document).ready(function () {
 
     });
 
+    // MAIN AUDIO
+    var audioContext = new webkitAudioContext();
+    var tuna = new Tuna(audioContext);
+
+    var AudioBus = function(){
+        this.input = audioContext.createGainNode();
+        var output = audioContext.createGainNode();
+
+        //create effect nodes (Convolver and Equalizer are other custom effects from the library presented at the end of the article)
+        var delay = new tuna.Delay({
+            feedback: 0,    //0 to 1+
+            delayTime: 0,    //how many milliseconds should the wet signal be delayed?
+            wetLevel: 0,    //0 to 1+
+            dryLevel: 0,       //0 to 1+
+            cutoff: 22050,        //cutoff frequency of the built in highpass-filter. 20 to 22050
+            bypass: 1000
+        });
+        var convolver = new tuna.Convolver();
+        var compressor = new tuna.Compressor({
+            threshold: 0,    //-100 to 0
+            makeupGain: 1,     //0 and up
+            attack: 1,         //0 to 1000
+            release: 0,        //0 to 3000
+            ratio: 1,          //1 to 20
+            knee: 5,           //0 to 40
+            automakeup: true,  //true/false
+            bypass: 0
+        });
+        var compressor = new tuna.Compressor({
+            threshold: 0,    //-100 to 0
+            makeupGain: 400,     //0 and up
+            attack: 1,         //0 to 1000
+            release: 3000,        //0 to 3000
+            ratio: 20,          //1 to 20
+            knee: 40,           //0 to 40
+            automakeup: true,  //true/false
+            bypass: 0
+        });
+        var cabinet = new tuna.Cabinet({
+            makeupGain: 1,                                 //0 to 20
+            impulsePath: "impulses/impulse_guitar.wav",    //path to your speaker impulse
+            bypass: 0
+        });
+
+        //route ‘em
+        //equalizer -> delay -> convolver
+        this.input.connect(delay.input);
+        delay.connect(cabinet.input);
+        cabinet.connect(output);
+
+
+        this.connect = function(target){
+            output.connect(target);
+        };
+    };
+
+    // AUDIO STUFF
+    var bus = new AudioBus();
+    var instrument1 = audioContext.createOscillator();
+
+    function playNote(fretNum, stringNum) {
+        var actualNote = 0;
+        var octaveFret = fretNum % 12;
+
+        if (stringNum === 0 || stringNum === 5) {
+            actualNote = (octaveFret + 7) % 12;
+        } else if (stringNum === 1) {
+            actualNote = (octaveFret + 2) % 12;
+        } else if (stringNum === 2) {
+            actualNote = (octaveFret + 10) % 12;
+        } else if (stringNum === 3) {
+            actualNote = (octaveFret + 5) % 12;
+        } else if (stringNum === 4) {
+            actualNote = octaveFret % 12;
+        }
+
+        // set instrument frequencies and instant play
+        instrument1.frequency.value = 523.25;
+
+        //connect our instruments to the same bus
+        instrument1.connect(bus.input);
+
+        bus.input.gain.value = 0.005;
+        bus.connect(audioContext.destination);
+        instrument1.start(0);
+    }
+    playNote();
 });
