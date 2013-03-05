@@ -355,6 +355,7 @@ $(document).ready(function () {
     var audioContext = new webkitAudioContext();
     var tuna = new Tuna(audioContext);
     var instrument1 = audioContext.createOscillator();
+    instrument1.type = 3;
     var AudioBus = function(){
         this.input = audioContext.createGainNode();
         var output = audioContext.createGainNode();
@@ -424,7 +425,7 @@ $(document).ready(function () {
 
     function processGuess(guessNote, fretNum, stringNum) {
         var actualNote = 0;
-        var octaveFret = fretNum % 12;
+        var octaveFret = fretNum;
 
         if (stringNum === 0 || stringNum === 5) {
             actualNote = (octaveFret + 4) % 12;
@@ -465,22 +466,36 @@ $(document).ready(function () {
 
     function playNote(fretNum, stringNum) {
         var actualNote = 0;
-        var octaveFret = fretNum % 12;
+        var octaveFret = fretNum;
+        var openStringOctave = 0;
 
-        if (stringNum === 0 || stringNum === 5) {
-            actualNote = (octaveFret + 4) % 12;
+        if (stringNum === 0) {
+            openStringOctave = 4;
+            actualNote = (octaveFret + 4);
+        } else if (stringNum === 5) {
+            openStringOctave = 2;
+            actualNote = (octaveFret + 4);
         } else if (stringNum === 1) {
-            actualNote = (octaveFret + 11) % 12;
+            openStringOctave = 3;
+            actualNote = (octaveFret + 11);
         } else if (stringNum === 2) {
-            actualNote = (octaveFret + 7) % 12;
+            openStringOctave = 3;
+            actualNote = (octaveFret + 7);
         } else if (stringNum === 3) {
-            actualNote = (octaveFret + 2) % 12;
+            openStringOctave = 3;
+            actualNote = (octaveFret + 2);
         } else if (stringNum === 4) {
-            actualNote = (octaveFret + 9) % 12;
+            openStringOctave = 2;
+            actualNote = (octaveFret + 9);
         }
 
-        var noteData = Note.fromLatin(noteUnicodeString(actualNote, true) + 4);
+        var correctOctave = openStringOctave + Math.floor(actualNote / 12.0);
+        actualNote %= 12;
+
+        var noteLatinName = noteUnicodeString(actualNote, true) + correctOctave;
+        var noteData = Note.fromLatin(noteLatinName);
         console.log(noteData.frequency());
+        console.log("Note Latin Name: " + noteLatinName);
 
         // set instrument frequencies and instant play
         instrument1.frequency.value = noteData.frequency();
@@ -488,7 +503,7 @@ $(document).ready(function () {
         //connect our instruments to the same bus
         instrument1.connect(bus.input);
 
-        bus.input.gain.value = 0.05;
+        bus.input.gain.value = 0.5;
         bus.connect(audioContext.destination);
         instrument1.start(0);
     }
