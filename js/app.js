@@ -319,30 +319,30 @@ $(document).ready(function () {
         horLine.attr("stroke", "#888888");
     }
 // end horizontal lines
-    function noteUnicodeString(note) {
+    function noteUnicodeString(note, isMusicjs) {
         switch (note) {
             case 0:
                 return "C";
             case 1:
-                return "C\u266F\nD\u266D";
+                return typeof isMusicjs === "undefined" ? "C\u266F\nD\u266D" : "C#";
             case 2:
                 return "D";
             case 3:
-                return "D\u266F\nE\u266D";
+                return typeof isMusicjs === "undefined" ? "D\u266F\nE\u266D" : "D#";
             case 4:
                 return "E";
             case 5:
                 return "F";
             case 6:
-                return "F\u266F\nG\u266D";
+                return typeof isMusicjs === "undefined" ? "F\u266F\nG\u266D" : "F#";
             case 7:
                 return "G";
             case 8:
-                return "G\u266F\nA\u266D";
+                return typeof isMusicjs === "undefined" ? "G\u266F\nA\u266D" : "G#";
             case 9:
                 return "A";
             case 10:
-                return "A\u266F\nB\u266D";
+                return typeof isMusicjs === "undefined" ? "A\u266F\nB\u266D" : "A#";
             case 11:
                 return "B";
         }
@@ -351,62 +351,10 @@ $(document).ready(function () {
     var randSpot = randFretStringNums();
     var randPress = paper.circle(fretCoord(1), stringCoord(1), RAND_PRESS_RADIUS);
 
-    function playFretboardGuess() {
-        infoText.attr({text: NOTE_QUESTION_TEXT, fill: '#000', stroke:"#000", "font-size": INFO_TEXT_FONT_SIZE});
-        randSpot = randFretStringNums();
-        randPress.remove();
-        randPress = paper.circle(fretCoord(randSpot.fretNum), stringCoord(randSpot.stringNum), RAND_PRESS_RADIUS);
-        randPress.attr("fill", "#FF0000");
-        randPress.attr("stroke", "#FF0000");
-    }
-
-    playFretboardGuess();
-
-    function processGuess(guessNote, fretNum, stringNum) {
-        var actualNote = 0;
-        var octaveFret = fretNum % 12;
-
-        if (stringNum === 0 || stringNum === 5) {
-            actualNote = (octaveFret + 4) % 12;
-        } else if (stringNum === 1) {
-            actualNote = (octaveFret + 12) % 12;
-        } else if (stringNum === 2) {
-            actualNote = (octaveFret + 7) % 12;
-        } else if (stringNum === 3) {
-            actualNote = (octaveFret + 2) % 12;
-        } else if (stringNum === 4) {
-            actualNote = (octaveFret + 9) % 12;
-        }
-
-        var noteStr = noteUnicodeString(guessNote);
-
-        if (guessNote === actualNote) {
-            var noteText = paper.text(randPress.attr('cx'), randPress.attr('cy'), noteStr).attr({fill: '#FFF', stroke: '#FFF', "font-size": RAND_PRESS_RADIUS - (RAND_PRESS_RADIUS / 4)});
-            randPress.attr({fill: "green", stroke: "green"});
-            infoText.attr({text: noteStr.replace("\n", " / ") + " is correct", fill: 'green', stroke:"green", "font-size": INFO_TEXT_FONT_SIZE})
-                .animate({"font-size": INFO_TEXT_FONT_SIZE},
-                1100, "linear",
-                function() {
-                    noteText.remove();
-                    playFretboardGuess();
-                }
-            );
-        } else {
-            infoText.attr({text: noteStr.replace("\n", " / ") + " is wrong",fill: '#FF0000', stroke:"#FF0000", "font-size": INFO_TEXT_FONT_SIZE});
-        }
-    }
-
-    $('.notes a').click(function (e) {
-        e.preventDefault();
-        var note = $(this).data('note');
-        processGuess(note, randSpot.fretNum, randSpot.stringNum);
-
-    });
-
     // MAIN AUDIO
     var audioContext = new webkitAudioContext();
     var tuna = new Tuna(audioContext);
-
+    var instrument1 = audioContext.createOscillator();
     var AudioBus = function(){
         this.input = audioContext.createGainNode();
         var output = audioContext.createGainNode();
@@ -458,36 +406,90 @@ $(document).ready(function () {
             output.connect(target);
         };
     };
-
     // AUDIO STUFF
     var bus = new AudioBus();
-    var instrument1 = audioContext.createOscillator();
+
+    function playFretboardGuess() {
+        infoText.attr({text: NOTE_QUESTION_TEXT, fill: '#000', stroke:"#000", "font-size": INFO_TEXT_FONT_SIZE});
+        randSpot = randFretStringNums();
+        playNote(randSpot.fretNum, randSpot.stringNum);
+        randPress.remove();
+        randPress = paper.circle(fretCoord(randSpot.fretNum), stringCoord(randSpot.stringNum), RAND_PRESS_RADIUS);
+        randPress.attr("fill", "#FF0000");
+        randPress.attr("stroke", "#FF0000");
+    }
+
+
+    playFretboardGuess();
+
+    function processGuess(guessNote, fretNum, stringNum) {
+        var actualNote = 0;
+        var octaveFret = fretNum % 12;
+
+        if (stringNum === 0 || stringNum === 5) {
+            actualNote = (octaveFret + 4) % 12;
+        } else if (stringNum === 1) {
+            actualNote = (octaveFret + 11) % 12;
+        } else if (stringNum === 2) {
+            actualNote = (octaveFret + 7) % 12;
+        } else if (stringNum === 3) {
+            actualNote = (octaveFret + 2) % 12;
+        } else if (stringNum === 4) {
+            actualNote = (octaveFret + 9) % 12;
+        }
+
+        var noteStr = noteUnicodeString(guessNote);
+
+        if (guessNote === actualNote) {
+            var noteText = paper.text(randPress.attr('cx'), randPress.attr('cy'), noteStr).attr({fill: '#FFF', stroke: '#FFF', "font-size": RAND_PRESS_RADIUS - (RAND_PRESS_RADIUS / 4)});
+            randPress.attr({fill: "green", stroke: "green"});
+            infoText.attr({text: noteStr.replace("\n", " / ") + " is correct", fill: 'green', stroke:"green", "font-size": INFO_TEXT_FONT_SIZE})
+                .animate({"font-size": INFO_TEXT_FONT_SIZE},
+                1100, "linear",
+                function() {
+                    noteText.remove();
+                    playFretboardGuess();
+                }
+            );
+        } else {
+            infoText.attr({text: noteStr.replace("\n", " / ") + " is wrong",fill: '#FF0000', stroke:"#FF0000", "font-size": INFO_TEXT_FONT_SIZE});
+        }
+    }
+
+    $('.notes a').click(function (e) {
+        e.preventDefault();
+        var note = $(this).data('note');
+        processGuess(note, randSpot.fretNum, randSpot.stringNum);
+
+    });
 
     function playNote(fretNum, stringNum) {
         var actualNote = 0;
         var octaveFret = fretNum % 12;
 
         if (stringNum === 0 || stringNum === 5) {
-            actualNote = (octaveFret + 7) % 12;
+            actualNote = (octaveFret + 4) % 12;
         } else if (stringNum === 1) {
-            actualNote = (octaveFret + 2) % 12;
+            actualNote = (octaveFret + 11) % 12;
         } else if (stringNum === 2) {
-            actualNote = (octaveFret + 10) % 12;
+            actualNote = (octaveFret + 7) % 12;
         } else if (stringNum === 3) {
-            actualNote = (octaveFret + 5) % 12;
+            actualNote = (octaveFret + 2) % 12;
         } else if (stringNum === 4) {
-            actualNote = octaveFret % 12;
+            actualNote = (octaveFret + 9) % 12;
         }
 
+        var noteData = Note.fromLatin(noteUnicodeString(actualNote, true) + 4);
+        console.log(noteData.frequency());
+
         // set instrument frequencies and instant play
-        instrument1.frequency.value = 523.25;
+        instrument1.frequency.value = noteData.frequency();
 
         //connect our instruments to the same bus
         instrument1.connect(bus.input);
 
-        bus.input.gain.value = 0.005;
+        bus.input.gain.value = 0.05;
         bus.connect(audioContext.destination);
         instrument1.start(0);
     }
-    playNote();
 });
