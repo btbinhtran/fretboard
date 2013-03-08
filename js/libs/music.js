@@ -113,6 +113,52 @@ Note.prototype.latin = function() {
     return noteNames[this.coord[1] + MUSIC.baseOffset[1] - acc * 7 + 3] + accidentals[acc + 2];
 }
 
+// C = 0, D = 1, ... , A = 11
+Note.prototype.numValue = function() {
+    var latin = this.latin();
+    if(latin === "C") return 0;
+    else if(latin === "C#" || latin === "Db") return 1;
+    else if(latin === "D") return 2;
+    else if(latin === "D#" || latin === "Eb") return 3;
+    else if(latin === "E") return 4;
+    else if(latin === "F") return 5;
+    else if(latin === "F#" || latin === "Gb") return 6;
+    else if(latin === "G") return 7;
+    else if(latin === "G#" || latin === "Ab") return 8;
+    else if(latin === "A") return 9;
+    else if(latin === "A#" || latin === "Bb") return 10;
+    else if(latin === "B") return 11;
+}
+
+Note.unicodeString = function(numValue, isSpecial) {
+    switch (numValue) {
+        case 0:
+            return "C";
+        case 1:
+            return isSpecial ? "C#" : "C\u266F\nD\u266D";
+        case 2:
+            return "D";
+        case 3:
+            return isSpecial ? "D#" : "D\u266F\nE\u266D";
+        case 4:
+            return "E";
+        case 5:
+            return "F";
+        case 6:
+            return isSpecial ? "F#" : "F\u266F\nG\u266D";
+        case 7:
+            return "G";
+        case 8:
+            return isSpecial ? "G#" : "G\u266F\nA\u266D";
+        case 9:
+            return "A";
+        case 10:
+            return isSpecial ? "A#" : "A\u266F\nB\u266D";
+        case 11:
+            return "B";
+    }
+}
+
 Note.fromLatin = function(name) {
 
     var out = [],
