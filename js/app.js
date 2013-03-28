@@ -1,37 +1,70 @@
 window.App = Ember.Application.create({
-    ready:function () {
-        var guitarExercise = App.GuitarExercise.create({});
+    ready: function () {
+    }
+});
 
+// Routing
+App.Router.map(function() {
+    this.route("guitar_exercise", { path: "/guitar_exercise" });
+});
+
+App.GuitarExerciseRoute = Ember.Route.extend({
+    setupController: function(controller, exercise) {
+        controller.set('content', exercise);
+    }
+});
+
+App.GuitarExerciseController = Ember.ObjectController.extend({
+    create: function(args) {
+        this._super();
+    }
+});
+
+App.FretboardView = Ember.View.extend({
+    didInsertElement: function() {
+        var canvasWidth = jQuery(document).width(),
+            canvasHeight = jQuery(document).height();
+        var guitarExercise = App.GuitarExercise.create({
+            paper: Raphael(this.get('elementId'), canvasWidth, canvasHeight),
+            canvasWidth: canvasWidth,
+            canvasHeight: canvasHeight
+        });
+//
         guitarExercise.start();
+    },
+
+    mouseEnter: function(event) {
+        console.log("Enter dragon");
+        console.log(event);
     }
 });
 
 // Guitar Exercise class
 App.GuitarExercise = Ember.Object.extend({
     oscillator: null,
-    paper:null,
-    guitar:null,
+    paper: null,
+    guitar: null,
     infoText: null,
     noteText: null,
     infoTextFontSize: 0,
     notesGamepad: null,
-    canvasWidth:1000,
-    canvasHeight:500,
+    canvasWidth: 1000,
+    canvasHeight: 500,
     randSpot: null,
     randGuitarNote: null,
     randGuitarNoteRadius: 1,
     randGuitarNoteColor: "#FF0000",
     nextNoteDelayMs: 1100,
 
-    init:function () {
+    init: function () {
         this._super();
-        this.canvasWidth = jQuery(document).width();
-        this.canvasHeight = jQuery(document).height();
+//        this.canvasWidth = jQuery(document).width();
+//        this.canvasHeight = jQuery(document).height();
 
-        if(this.oscillator === null)
+        if (this.oscillator === null)
             this.oscillator = T("PluckGen", {wave: "pulse", mul: 0.5});
 
-        this.paper = Raphael("fretboard", this.canvasWidth, this.canvasHeight);
+//        this.paper = Raphael("fretboard", this.canvasWidth, this.canvasHeight);
         this.guitar = App.Guitar.create({
             paper: this.paper,
             oscillator: this.oscillator,
@@ -149,21 +182,24 @@ App.GuitarExercise = Ember.Object.extend({
             wheelTextFontSize: 20 * (1 - (20 / this.guitar.fretboardWidth))
         });
 
-        jQuery.each(this.notesGamepad.buttons, function(indexInArray, button) {
-            button.click(function() {
+        jQuery.each(this.notesGamepad.buttons, function (indexInArray, button) {
+            button.click(function () {
                 self.makeGuess(button.value, self.randSpot.fretNum, self.randSpot.stringNum);
             })
         });
+
+        // make settings
+        $("#settings").hover("")
     },
 
-    randFretStringNums: function() {
+    randFretStringNums: function () {
         return {
             fretNum: Math.floor(Math.random() * (this.guitar.frets + 1)),
             stringNum: Math.floor(Math.random() * this.guitar.strings.length)
         };
     },
 
-    playRandomGuitarNote: function() {
+    playRandomGuitarNote: function () {
         this.randSpot = this.randFretStringNums();
         if (this.randGuitarNote) this.randGuitarNote.remove();
         if (this.noteText) this.noteText.remove();
@@ -174,7 +210,7 @@ App.GuitarExercise = Ember.Object.extend({
         this.infoText.attr({text: "Guess the note pressed on string " + (this.randSpot.stringNum + 1) + " fret " + this.randSpot.fretNum, fill: "#000", stroke: "none", "font-size": this.infoTextFontSize});
     },
 
-    makeGuess: function(guessNote, fretNum, stringNum) {
+    makeGuess: function (guessNote, fretNum, stringNum) {
         var stringNote = Note.fromLatin(this.guitar.strings[stringNum]),
             actualNoteValue = (fretNum + stringNote.numValue()) % 12,
             guessNoteStr = Note.unicodeString(guessNote),
@@ -184,28 +220,28 @@ App.GuitarExercise = Ember.Object.extend({
             this.noteText = this.paper.text(this.randGuitarNote.attr('cx'), this.randGuitarNote.attr('cy'), guessNoteStr)
                 .attr({fill: '#FFF', stroke: '#FFF', "font-size": this.randGuitarNoteRadius - (this.randGuitarNoteRadius / 4)});
             this.randGuitarNote.attr({fill: "green", stroke: "green"});
-            this.infoText.attr({text: guessNoteStr.replace("\n", " / ") + " is right",fill: 'green', stroke:"green", "font-size": this.infoTextFontSize})
+            this.infoText.attr({text: guessNoteStr.replace("\n", " / ") + " is right", fill: 'green', stroke: "green", "font-size": this.infoTextFontSize})
                 .animate({"font-size": this.infoTextFontSize},
-                    this.nextNoteDelayMs, "linear",
-            function() {
-                self.guitar.interval.timeout = 0;
-                self.guitar.interval.on("ended", function() {
-                    self.playRandomGuitarNote();
+                this.nextNoteDelayMs, "linear",
+                function () {
+                    self.guitar.interval.timeout = 0;
+                    self.guitar.interval.on("ended", function () {
+                        self.playRandomGuitarNote();
+                    });
                 });
-            });
         } else {
-            this.infoText.attr({text: guessNoteStr.replace("\n", " / ") + " is wrong",fill: '#FF0000', stroke:"#FF0000", "font-size": this.infoTextFontSize});
+            this.infoText.attr({text: guessNoteStr.replace("\n", " / ") + " is wrong", fill: '#FF0000', stroke: "#FF0000", "font-size": this.infoTextFontSize});
         }
     },
 
-    start:function () {
+    start: function () {
         this.guitar.drawFretboard();
         this.playRandomGuitarNote();
     }
 });
 
 App.NotesGamepad = Ember.Object.extend({
-    paper:null,
+    paper: null,
     cx: 0,
     cy: 0,
     rad: Math.PI / 180,
@@ -217,7 +253,7 @@ App.NotesGamepad = Ember.Object.extend({
     txtStrokeColor: "#000",
     wheelTextFontSize: 20,
 
-    init:function () {
+    init: function () {
         this._super();
         this.buttons = this.paper.set();
 
@@ -230,7 +266,7 @@ App.NotesGamepad = Ember.Object.extend({
             inStart = 0,
             self = this;
 
-        var createOutButton = function(j) {
+        var createOutButton = function (j) {
             var outNote = self.outNotes[j],
                 outAngleplus = 360 * outNote.percent / outTotal,
                 outPopangle = outAngle + (outAngleplus / 2),
@@ -239,13 +275,13 @@ App.NotesGamepad = Ember.Object.extend({
                 bcolor = outNote.bgColor,
                 p = self.outerSector(self.cx, self.cy, self.rOut, self.rIn, outAngle, outAngle + outAngleplus, {fill: bcolor, stroke: self.txtStrokeColor, "stroke-width": 3}),
                 txt = self.paper.text(self.cx + (self.rOut - outSectorPad) * Math.cos(-outPopangle * self.rad), self.cy + (self.rOut - outSectorPad) * Math.sin(-outPopangle * self.rad), outNote.label).attr({fill: self.txtStrokeColor, stroke: self.txtStrokeColor, "font-size": self.wheelTextFontSize}),
-                pieceMouseOver = function() {
-                    p.stop().animate({transform:"s1.05 1.05 " + (self.cx) + " " + (self.cy)}, ms, "linear");
-                    txt.stop().animate({transform:"s1.05 1.05 " + (self.cx) + " " + (self.cy)}, ms, "linear");
+                pieceMouseOver = function () {
+                    p.stop().animate({transform: "s1.05 1.05 " + (self.cx) + " " + (self.cy)}, ms, "linear");
+                    txt.stop().animate({transform: "s1.05 1.05 " + (self.cx) + " " + (self.cy)}, ms, "linear");
                 },
                 pieceMouseOut = function () {
-                    p.stop().animate({transform:""}, ms, "linear");
-                    txt.stop().animate({transform:""}, ms, "linear");
+                    p.stop().animate({transform: ""}, ms, "linear");
+                    txt.stop().animate({transform: ""}, ms, "linear");
                 };
 
             // attach piece event listeners
@@ -254,16 +290,16 @@ App.NotesGamepad = Ember.Object.extend({
             button.mouseover(pieceMouseOver).mouseout(pieceMouseOut);
             button.value = outNote.value;
 
-                // Update Angles
+            // Update Angles
             outAngle += outAngleplus;
             outStart += 0.1;
 
             return button;
         };
 
-        for(var i = 0, outNotesSize = this.outNotes.length; i < outNotesSize; i++)
+        for (var i = 0, outNotesSize = this.outNotes.length; i < outNotesSize; i++)
             outTotal += this.outNotes[i].percent;
-        for(i = 0; i < outNotesSize; ++i)
+        for (i = 0; i < outNotesSize; ++i)
             this.buttons.push(createOutButton(i));
 
         // Create inner buttons
@@ -276,16 +312,16 @@ App.NotesGamepad = Ember.Object.extend({
                 bcolor = inNote.bgColor;
 
             if (inNote.value !== -1) {
-                var p = self.innerSector(self.cx, self.cy, self.rIn, inAngle, inAngle + inAngleplus, {fill:bcolor, stroke: self.txtStrokeColor, "stroke-width":3}),
+                var p = self.innerSector(self.cx, self.cy, self.rIn, inAngle, inAngle + inAngleplus, {fill: bcolor, stroke: self.txtStrokeColor, "stroke-width": 3}),
                     txt = self.paper.text(self.cx + (self.rIn - inSectorPad) * Math.cos(-inPopangle * self.rad), self.cy + (self.rIn - inSectorPad) * Math.sin(-inPopangle * self.rad), inNote.label).attr({fill: self.txtStrokeColor, stroke: self.txtStrokeColor, "font-size": self.wheelTextFontSize});
                 var pieceMouseOver = function () {
-                    p.stop().animate({transform:"s1.05 1.05 " + (self.cx) + " " + (self.cy)}, ms, "linear");
-                    txt.stop().animate({transform:"s1.05 1.05 " + (self.cx) + " " + (self.cy)}, ms, "linear");
-                },
-                pieceMouseOut = function () {
-                    p.stop().animate({transform:""}, ms, "linear");
-                    txt.stop().animate({transform:""}, ms, "linear");
-                };
+                        p.stop().animate({transform: "s1.05 1.05 " + (self.cx) + " " + (self.cy)}, ms, "linear");
+                        txt.stop().animate({transform: "s1.05 1.05 " + (self.cx) + " " + (self.cy)}, ms, "linear");
+                    },
+                    pieceMouseOut = function () {
+                        p.stop().animate({transform: ""}, ms, "linear");
+                        txt.stop().animate({transform: ""}, ms, "linear");
+                    };
 
                 // attach piece event listeners
                 var button = self.paper.set();
@@ -299,13 +335,13 @@ App.NotesGamepad = Ember.Object.extend({
             return button;
         };
 
-        for(var i = 0, inNotesSize = this.inNotes.length; i < inNotesSize; i++)
+        for (var i = 0, inNotesSize = this.inNotes.length; i < inNotesSize; i++)
             inTotal += this.inNotes[i].percent;
-        for(i = 0; i < inNotesSize; ++i)
+        for (i = 0; i < inNotesSize; ++i)
             this.buttons.push(createInButton(i));
     },
 
-    innerSector: function(cx, cy, r, startAngle, endAngle, params) {
+    innerSector: function (cx, cy, r, startAngle, endAngle, params) {
         var rad = Math.PI / 180;
 
         var x1 = cx + r * Math.cos(-startAngle * rad),
@@ -315,7 +351,7 @@ App.NotesGamepad = Ember.Object.extend({
         return this.paper.path(["M", cx, cy, "L", x1, y1, "A", r, r, 0, +(endAngle - startAngle > 180), 0, x2, y2, "z"]).attr(params);
     },
 
-    outerSector: function(cx, cy, rOut, rIn, startAngle, endAngle, params) {
+    outerSector: function (cx, cy, rOut, rIn, startAngle, endAngle, params) {
         var rad = Math.PI / 180;
 
         var x1 = cx + rOut * Math.cos(-startAngle * rad),
@@ -338,26 +374,26 @@ App.NotesGamepad = Ember.Object.extend({
 
 // Guitar class that utilizes Raphael paper
 App.Guitar = Ember.Object.extend({
-    strings:['E4', 'B3', 'G3', 'D3', 'A2', 'E2'], // standard tuning from 1st to 6th string
-    frets:24,
-    paper:null,
-    oscillator:null,
+    strings: ['E4', 'B3', 'G3', 'D3', 'A2', 'E2'], // standard tuning from 1st to 6th string
+    frets: 24,
+    paper: null,
+    oscillator: null,
     interval: null,
     fretboardBgColor: "#000",
     fretboardStrokeColor: "#000",
-    fretboardWidth:0,
-    fretboardHeight:0,
-    fretWidth:0,
-    fretBarWidth:2,
+    fretboardWidth: 0,
+    fretboardHeight: 0,
+    fretWidth: 0,
+    fretBarWidth: 2,
     fretBarColor: "silver",
     fretMarkColor: "#FFF",
-    fretMarkRadius:0,
+    fretMarkRadius: 0,
     nutWidth: 4,
-    stringPad:0,
-    x:0,
-    y:10,
+    stringPad: 0,
+    x: 0,
+    y: 10,
 
-    init:function () {
+    init: function () {
         this._super();
         this.fretboardWidth = this.paper.height * 0.26;
         this.fretboardHeight = this.paper.width * 0.90;
@@ -367,19 +403,19 @@ App.Guitar = Ember.Object.extend({
         this.x = ((this.paper.width - this.fretboardHeight) / 2) - 5;
     },
 
-    fretCoord:function (fretNum) {
+    fretCoord: function (fretNum) {
         return this.x + this.nutWidth
             + ((this.fretWidth * fretNum) - (this.fretWidth / 2.0) - (this.fretBarWidth / 2.0));
     },
 
-    stringCoord:function (stringNum) {
+    stringCoord: function (stringNum) {
         return (stringNum * this.stringPad) + this.y + (this.fretboardWidth / 12.0) - 2;
     },
 
-    drawFretboard:function () {
+    drawFretboard: function () {
         var halfFretboardWidth = this.fretboardWidth / 2.0;
         var fretBg = this.paper.rect(this.x + this.nutWidth, this.y, this.fretboardHeight, this.fretboardWidth)
-            .attr({fill:this.fretboardBgColor, stroke:this.fretboardStrokeColor});
+            .attr({fill: this.fretboardBgColor, stroke: this.fretboardStrokeColor});
 
         // draw fret lines
         var vertLineHeight = this.stringPad * this.strings.length;
@@ -392,7 +428,7 @@ App.Guitar = Ember.Object.extend({
         }
 
         // draw strings
-        for(var i = 0; i < this.strings.length; ++i) {
+        for (var i = 0; i < this.strings.length; ++i) {
             var horLine = this.paper.rect(this.x, this.stringCoord(i), this.fretboardHeight + this.nutWidth, i + 1)
                 .attr({"fill": "#AAAAAA", "stroke": "#888888"});
         }
@@ -422,7 +458,7 @@ App.Guitar = Ember.Object.extend({
         }
     },
 
-    playGuitarNoteSound:function (fretNum, stringNum) {
+    playGuitarNoteSound: function (fretNum, stringNum) {
         var stringNote = Note.fromLatin(this.strings[stringNum]),
             openStringOctave = stringNote.octave(),
             actualNote = stringNote.numValue() + fretNum,
@@ -432,10 +468,10 @@ App.Guitar = Ember.Object.extend({
 
 //        this.oscillator.noteOnWithFreq(note.frequency(), 100);
 //        this.oscillator.play();
-        if(this.interval) {
+        if (this.interval) {
             this.interval.timeout = 0;
         }
-        this.interval = T("interval", {interval: 2000}, function(count) {
+        this.interval = T("interval", {interval: 2000},function (count) {
             self.oscillator.noteOnWithFreq(note.frequency(), 100).play();
         }).start();
 

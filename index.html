@@ -17,8 +17,18 @@
   </head>
   <body>
 
+    <script type="text/x-handlebars" data-template-name="application">
+        <div id="main-content">
+            {{ outlet }}
+        </div>
+    </script>
 
-    <div id="fretboard"></div>
+    <script type="text/x-handlebars" data-template-name="guitar_exercise">
+        {{ view App.FretboardView id="fretboard" }}
+        <div id="settings">
+            <h1>Settings</h1>
+        </div>
+    </script>
 
     <script src="js/libs/jquery-1.9.1.min.js"></script>
     <script src="js/libs/handlebars.js"></script>

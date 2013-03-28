@@ -9,3 +9,18 @@ h1.success {
 h1.error {
   color: red;
 }
+
+#settings {
+  position: absolute;
+  top: 0;
+  left: 10%;
+  width: 80%;
+  height: 20px;
+  background-color: yellow;
+  overflow: hidden;
+}
+
+.active {
+  overflow: visible;
+  height: 100%;
+}
